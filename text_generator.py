@@ -1,5 +1,6 @@
 from nltk.tokenize import WhitespaceTokenizer
 from nltk.util import ngrams
+from collections import Counter
 
 user_input = input()
 f = open(user_input, "r", encoding="utf-8")
@@ -9,20 +10,23 @@ tokenizer = WhitespaceTokenizer()
 tokens = tokenizer.tokenize(corpus)
 bigrams = list(ngrams(tokens, 2))
 
-print("Number of bigrams: ", len(bigrams))
+head_dict = {}
+for bigram in bigrams:
+    head_dict.setdefault(bigram[0], []).append(bigram[1])
+for head in head_dict:
+    head_dict[head] = Counter(head_dict[head])
+
 
 while True:
-    index = input()
-    if index == "exit":
+    key = input()
+    if key == "exit":
         break
-    try:
-        index = int(index)
-        if index >= len(bigrams):
-            print("Index Error. Please input a value that is not greater than the number of all bigrams.")
-        else:
-            print("Head: {} Tail: {}".format(bigrams[index][0], bigrams[index][1]))
-    except ValueError:
-        print("Type Error. Please input an integer.")
+    if key not in head_dict:
+        print("Key Error. The requested word is not in the model. Please input another word.")
+    else:
+        print("Head: {}".format(key))
+        for tail in head_dict[key]:
+            print("Tail: {} Count: {}".format(tail, head_dict[key][tail]))
 
 
 def main():
