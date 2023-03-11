@@ -1,4 +1,5 @@
 import random
+import string
 
 from nltk.tokenize import WhitespaceTokenizer
 from nltk.util import ngrams
@@ -25,13 +26,23 @@ for head in head_dict:
 # generate a sentence
 def generate_sentence():
     sentence_list = []
-    # choose a random word as the first word of the chain
-    first_word = random.choice(list(head_dict.keys()))
-    # choose the second word based on the counts of the tails of the first word, repeat until 10 words in the chain
-    chain = random.choices(list(head_dict[first_word].keys()), weights=list(head_dict[first_word].values()), k=9)
-
+    # choose a random word as the first word of the chain, and starts with a capital letter
+    uppercase_letters = list(string.ascii_uppercase)
+    capital_head = list(filter(lambda word: word[0] in uppercase_letters, head_dict.keys()))
+    # not start with a word that ends with a sentence-ending punctuation mark
+    capital_head_end = list(filter(lambda word: not word.endswith((".", "!", "?")), capital_head))
+    first_word = random.choice(capital_head_end)
     sentence_list.append(first_word)
-    sentence_list.extend(chain)
+    # always end with a sentence-ending punctuation mark，and should not be shorter than 5 tokens
+    while True:
+        last_word = sentence_list[-1]
+        if last_word.endswith((".", "!", "?")) and len(sentence_list) >= 5:
+            break
+        else:
+            next_word = random.choices(list(head_dict[last_word].keys()),
+                                       weights=list(head_dict[last_word].values()))[0]
+            sentence_list.append(next_word)
+
     sentence = " ".join(sentence_list)
 
     return sentence
